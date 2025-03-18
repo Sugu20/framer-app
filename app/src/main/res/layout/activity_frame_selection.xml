@@ -1,0 +1,65 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:padding="16dp">
+
+    <ImageView
+        android:id="@+id/framePreview"
+        android:layout_width="300dp"
+        android:layout_height="300dp"
+        android:background="@drawable/black_frame"
+        android:scaleType="centerCrop" />
+
+    <HorizontalScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:fillViewport="true">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:layout_marginTop="20dp">
+
+            <Button
+                android:id="@+id/blackFrame"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Black Frame" />
+
+            <Button
+                android:id="@+id/woodFrame"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Wood Frame"
+                android:layout_marginLeft="10dp" />
+
+            <Button
+                android:id="@+id/goldFrame"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Gold Frame"
+                android:layout_marginLeft="10dp" />
+
+            <Button
+                android:id="@+id/artisticFrame"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Artistic Frame"
+                android:layout_marginLeft="10dp" />
+
+        </LinearLayout>
+    </HorizontalScrollView>
+
+
+    <Button
+        android:id="@+id/confirmButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Confirm &amp; Proceed"
+        android:layout_marginTop="20dp"/>
+
+</LinearLayout>
