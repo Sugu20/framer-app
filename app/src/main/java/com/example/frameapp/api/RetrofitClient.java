@@ -19,7 +19,7 @@ public class RetrofitClient {
                     .build();
 
             retrofit = new Retrofit.Builder()
-                    .baseUrl( "https://bfe0-2401-4900-1cc9-5949-f52d-1cdb-56be-9b25.ngrok-free.app/" ) // Replace with your server's URL
+                    .baseUrl("https://912a-14-139-187-225.ngrok-free.app/framer/") // Replace with your server's URL
                     .client(client)
                     .addConverterFactory(GsonConverterFactory.create())
                     .build();

@@ -1,68 +1,102 @@
 package com.example.frameapp;
 
+import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.Uri;
 import android.os.Bundle;
-import android.widget.ImageView;
 import android.widget.Toast;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
-
-import com.example.frameapp.R;
-import com.example.frameapp.api.ApiService;
-import com.example.frameapp.response.UserResponse;
-import com.squareup.picasso.Picasso;
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
-import retrofit2.Retrofit;
-import retrofit2.converter.gson.GsonConverterFactory;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import com.example.frameapp.databinding.ActivityDashboardBinding;
+import java.util.ArrayList;
 
 public class DashboardActivity extends AppCompatActivity {
 
-    private ImageView profileImage;
-    private String BASE_URL = "https://yourdomain.com/"; // Change to your actual API domain
+    private ActivityDashboardBinding binding;
+    private ImageAdapter imageAdapter;
+    private ArrayList<Uri> imageUris = new ArrayList<>();
+    private static final int MAX_IMAGES = 5;
+    private String phoneNumber;
+
+    private final ActivityResultLauncher<String> imagePickerLauncher = registerForActivityResult(
+            new ActivityResultContracts.GetMultipleContents(),
+            uris -> {
+                if (uris.size() > MAX_IMAGES) {
+                    Toast.makeText(this, "You can only select up to 5 images", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                imageUris.clear();
+                imageUris.addAll(uris);
+                imageAdapter.notifyDataSetChanged();
+                updateNextButtonState();
+            });
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_dashboard);
 
-        profileImage = findViewById(R.id.profileImage);
+        binding = ActivityDashboardBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
 
-        // Fetch stored phone number
         SharedPreferences sharedPreferences = getSharedPreferences("MyPrefs", MODE_PRIVATE);
-        String phoneNumber = sharedPreferences.getString("phone_number", null);
+        phoneNumber = sharedPreferences.getString("phone_number", null);
 
-        if (phoneNumber != null) {
-            fetchUserProfile(phoneNumber);
-        }
+        setupRecyclerView();
+        setClickListeners();
     }
 
-    private void fetchUserProfile(String phoneNumber) {
-        Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl(BASE_URL)
-                .addConverterFactory(GsonConverterFactory.create())
-                .build();
+    private void setupRecyclerView() {
+        binding.imageRecyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
+        imageAdapter = new ImageAdapter(this, imageUris);
+        binding.imageRecyclerView.setAdapter(imageAdapter);
+    }
 
-        ApiService apiService = retrofit.create(ApiService.class);
-        Call<UserResponse> call = apiService.getUser(phoneNumber);
+    private void setClickListeners() {
+        binding.btnUpload.setOnClickListener(v -> imagePickerLauncher.launch("image/*"));
 
-        call.enqueue(new Callback<UserResponse>() {
-            @Override
-            public void onResponse(Call<UserResponse> call, Response<UserResponse> response) {
-                if (response.isSuccessful() && response.body() != null && "success".equals(response.body().getStatus())) {
-                    String imageUrl = BASE_URL + response.body().getUser().getImageUrl();
-
-                    // Load Image into ImageView using Picasso
-                    Picasso.get().load(imageUrl).placeholder(R.drawable.profile_placeholder).into(profileImage);
-                } else {
-                    Toast.makeText(DashboardActivity.this, "User not found!", Toast.LENGTH_SHORT).show();
-                }
+        binding.btnNext.setOnClickListener(v -> {
+            if (imageUris.size() < 2) {
+                Toast.makeText(this, "Please select at least 2 images", Toast.LENGTH_SHORT).show();
+                return;
             }
-
-            @Override
-            public void onFailure(Call<UserResponse> call, Throwable t) {
-                Toast.makeText(DashboardActivity.this, "Error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
-            }
+            navigateToNextActivity();
         });
+    }
+
+    private void updateNextButtonState() {
+        binding.btnNext.setEnabled(imageUris.size() >= 2);
+    }
+
+    private void navigateToNextActivity() {
+        Intent intent = null;
+        switch (imageUris.size()) {
+            case 2:
+                intent = new Intent(this, TwoImageLayoutActivity.class);
+                break;
+            case 3:
+                intent = new Intent(this, ThreeImageLayoutActivity.class);
+                break;
+            case 4:
+                intent = new Intent(this, FourImageLayoutActivity.class);
+                break;
+            case 5:
+                intent = new Intent(this, FiveImageLayoutActivity.class);
+                break;
+            default:
+                Toast.makeText(DashboardActivity.this, "Please select at least 2 images to continue", Toast.LENGTH_SHORT).show();
+                return;
+        }
+
+        // Convert Uri list to String list
+        ArrayList<String> stringUris = new ArrayList<>();
+        for (Uri uri : imageUris) {
+            stringUris.add(uri.toString());
+        }
+
+        intent.putStringArrayListExtra("selectedImages", stringUris); // Correct key and format
+        intent.putExtra("phone_number", phoneNumber);
+        startActivity(intent);
     }
 }

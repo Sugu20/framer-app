@@ -11,7 +11,7 @@
         android:id="@+id/profileImage"
         android:layout_width="132dp"
         android:layout_height="136dp"
-        android:layout_marginTop="20dp"
+        android:layout_marginTop="70dp"
         android:background="@drawable/circle_border"
         android:scaleType="centerCrop"
         android:src="@drawable/profile_placeholder"
